@@ -2,7 +2,7 @@ import pool from '../config/database.js';
 
 const createTables = async () => {
   try {
-    // Create users table
+    
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -14,7 +14,7 @@ const createTables = async () => {
       );
     `);
 
-    // Create doctors table
+    
     await pool.query(`
       CREATE TABLE IF NOT EXISTS doctors (
         id SERIAL PRIMARY KEY,
@@ -30,7 +30,7 @@ const createTables = async () => {
       );
     `);
 
-    // Create appointments table
+   
     await pool.query(`
       CREATE TABLE IF NOT EXISTS appointments (
         id SERIAL PRIMARY KEY,

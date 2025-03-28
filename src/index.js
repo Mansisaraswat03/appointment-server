@@ -1,13 +1,22 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import v1Routes from './api/v1/index.js';
-
+import express from "express";
+import dotenv from "dotenv";
+import v1Routes from "./api/v1/index.js";
+import cors from "cors";
 dotenv.config();
 
 const app = express();
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 
-app.use('/v1', v1Routes);
+app.use("/v1", v1Routes);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
