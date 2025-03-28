@@ -26,7 +26,7 @@ const createTables = async () => {
         location TEXT,
         availability_schedule JSONB,
         consultation_fee DECIMAL,
-        is_available BOOLEAN DEFAULT true
+        gender VARCHAR(10) CHECK (gender IN ('male', 'female', 'other')),
       );
     `);
 
