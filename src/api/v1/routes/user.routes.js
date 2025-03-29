@@ -92,7 +92,7 @@ router.post("/login", (req, res, next) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       domain:
         process.env.NODE_ENV === "production"
-          ? process.env.FRONTEND_URL
+          ? process.env.APP_URL
           : undefined,
       maxAge: 24 * 60 * 60 * 1000,
     });
