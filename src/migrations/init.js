@@ -2,7 +2,6 @@ import pool from '../config/database.js';
 
 const createTables = async () => {
   try {
-    
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -14,7 +13,6 @@ const createTables = async () => {
       );
     `);
 
-    
     await pool.query(`
       CREATE TABLE IF NOT EXISTS doctors (
         id SERIAL PRIMARY KEY,
@@ -24,13 +22,14 @@ const createTables = async () => {
         qualification TEXT,
         rating DECIMAL DEFAULT 0,
         location TEXT,
-        availability_schedule JSONB,
         consultation_fee DECIMAL,
         gender VARCHAR(10) CHECK (gender IN ('male', 'female', 'other')),
+        start_time TIME,
+        end_time TIME,
+        booked_slots JSONB DEFAULT '{}'::jsonb
       );
     `);
 
-   
     await pool.query(`
       CREATE TABLE IF NOT EXISTS appointments (
         id SERIAL PRIMARY KEY,
@@ -40,7 +39,11 @@ const createTables = async () => {
         status VARCHAR(50),
         type VARCHAR(50),
         problem TEXT,
-        patient_details JSONB
+        patient_details JSONB,
+        booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        cancellation_reason TEXT,
+        cancelled_by INTEGER REFERENCES users(id),
+        cancelled_at TIMESTAMP
       );
     `);
 
