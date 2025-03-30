@@ -25,6 +25,21 @@ export const doctorController = {
     }
   },
 
+  async getDoctorById(req, res) {
+    try {
+      const doctor = await doctorService.getDoctorById(req.params.id);
+      res.json({
+        success: true,
+        data: doctor
+      });
+    } catch (error) {
+      res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+  },
+
   async createDoctor(req, res) {
     try {
       const doctor = await doctorService.createDoctor(req.body);

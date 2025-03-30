@@ -45,6 +45,48 @@ export const doctorService = {
     }
   },
 
+  async getDoctorById(id) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+  
+      const doctorResult = await client.query(
+        `SELECT * FROM doctors WHERE id = $1`,
+        [id]
+      );
+  
+      if (doctorResult.rows.length === 0) {
+        throw new Error('Doctor not found');
+      }
+  
+      const doctor = doctorResult.rows[0];
+  
+      const userResult = await client.query(
+        `SELECT name, profile FROM users WHERE id = $1`,
+        [doctor.user_id]
+      );
+  
+      if (userResult.rows.length === 0) {
+        throw new Error('User not found');
+      }
+  
+      const user = userResult.rows[0];
+  
+      await client.query('COMMIT');
+      
+      return {
+        ...doctor,
+        name: user.name,
+        profile: user.profile
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  },
+
   // async getNextAvailableSlots(doctorId) {
   //   const client = await pool.connect();
   //   try {
@@ -158,6 +200,7 @@ export const doctorService = {
         end_time,
         booked_slots = {},
         profile,
+        rating = 0,
       } = doctorData;
 
       const salt = await bcrypt.genSalt(10);
@@ -170,8 +213,8 @@ export const doctorService = {
 
       const doctorResult = await client.query(
         `INSERT INTO doctors 
-         (user_id, specialty, experience, qualification, location, consultation_fee, gender, start_time, end_time, booked_slots)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         (user_id, specialty, experience, qualification, location, consultation_fee, gender, start_time, end_time, booked_slots, rating)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          RETURNING *`,
         [
           userResult.rows[0].id,
@@ -184,6 +227,7 @@ export const doctorService = {
           start_time,
           end_time,
           booked_slots,
+          rating,
         ]
       );
 
@@ -202,7 +246,6 @@ export const doctorService = {
     try {
       await client.query("BEGIN");
 
-      // First check if doctor exists
       const doctorCheck = await client.query(
         "SELECT user_id FROM doctors WHERE id = $1",
         [id]
@@ -214,7 +257,6 @@ export const doctorService = {
 
       const userId = doctorCheck.rows[0].user_id;
 
-      // Update user table if name or profile is provided
       if (updateData.name || updateData.profile) {
         const updateFields = [];
         const updateValues = [];
@@ -252,8 +294,9 @@ export const doctorService = {
              gender = COALESCE($6, gender),
              start_time = COALESCE($7, start_time),
              end_time = COALESCE($8, end_time),
-             booked_slots = COALESCE($9, booked_slots)
-         WHERE id = $10
+             booked_slots = COALESCE($9, booked_slots),
+             rating = COALESCE($10, rating)
+         WHERE id = $11
          RETURNING *`,
         [
           updateData.specialty,
@@ -265,6 +308,7 @@ export const doctorService = {
           updateData.start_time,
           updateData.end_time,
           updateData.booked_slots,
+          updateData.rating,
           id,
         ]
       );

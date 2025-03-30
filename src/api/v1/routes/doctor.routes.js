@@ -8,7 +8,7 @@ router.use((req, res, next) => {
     next();
   });
 router.get('/', doctorController.getAllDoctors);
-
+router.get('/:id', doctorController.getDoctorById);
 router.post('/', authenticate, isAdmin, validateDoctorInput, doctorController.createDoctor);
 router.patch('/:id', authenticate, isAdmin, doctorController.updateDoctor);
 router.delete('/:id', authenticate, isAdmin, doctorController.deleteDoctor);
