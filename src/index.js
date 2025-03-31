@@ -5,10 +5,16 @@ import cors from "cors";
 dotenv.config();
 
 const app = express();
-
+const allowedOrigins = [process.env.FRONTEND_URL, process.env.ADMIN_URL] || [];
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],

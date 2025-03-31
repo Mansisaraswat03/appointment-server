@@ -5,7 +5,7 @@ export const buildSearchQuery = (queryParams) => {
     gender,
     rating,
     page = 1,
-    limit = 10
+    limit = 9
   } = queryParams;
 
   let query = `

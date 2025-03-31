@@ -6,6 +6,8 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import pool from "../../../config/database.js";
 import dotenv from "dotenv";
+import { authenticate, isAdmin } from "../../../middleware/auth.middleware.js";
+import { userController } from "../../../controllers/user.controller.js";
 dotenv.config();
 const router = express.Router();
 
@@ -156,8 +158,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-const authenticate = passport.authenticate("jwt", { session: false });
-
 router.get("/profile", authenticate, async (req, res) => {
   try {
     const result = await pool.query(
@@ -177,5 +177,7 @@ router.get("/profile", authenticate, async (req, res) => {
     });
   }
 });
+
+router.get('/', authenticate, isAdmin , userController.getAllUsers);
 
 export default router;
