@@ -14,7 +14,6 @@ export const doctorService = {
 
       const doctorsWithSlots = await Promise.all(
         result.rows.map(async (doctor) => {
-          // const availableSlots = await this.getNextAvailableSlots(doctor.id);
 
           const userResult = await client.query(
             "SELECT name, profile FROM users WHERE id = $1",
@@ -25,7 +24,6 @@ export const doctorService = {
             ...doctor,
             name: userResult.rows[0].name,
             profile: userResult.rows[0].profile,
-            // availableSlots,
           };
         })
       );
@@ -86,100 +84,6 @@ export const doctorService = {
       client.release();
     }
   },
-
-  // async getNextAvailableSlots(doctorId) {
-  //   const client = await pool.connect();
-  //   try {
-  //     await client.query("BEGIN");
-
-  //     const result = await client.query(
-  //       `SELECT start_time, end_time, booked_slots 
-  //        FROM doctors 
-  //        WHERE id = $1`,
-  //       [doctorId]
-  //     );
-
-  //     if (result.rows.length === 0) {
-  //       return [];
-  //     }
-
-  //     const { start_time, end_time, booked_slots } = result.rows[0];
-  //     const availableSlots = [];
-  //     const today = new Date();
-
-  //     for (let i = 0; i < 7; i++) {
-  //       const date = new Date(today);
-  //       date.setDate(date.getDate() + i);
-  //       const dateString = date.toISOString().split("T")[0];
-
-  //       const slots = this.generateTimeSlots(start_time, end_time);
-
-  //       const bookedSlotsForDate = booked_slots[dateString] || [];
-
-  //       const availableSlotsForDate = slots.filter(
-  //         (slot) => !bookedSlotsForDate.includes(slot)
-  //       );
-
-  //       if (availableSlotsForDate.length > 0) {
-  //         availableSlots.push({
-  //           date: dateString,
-  //           available: availableSlotsForDate,
-  //           booked: bookedSlotsForDate,
-  //           dayOfWeek: this.getDayOfWeek(date.getDay()),
-  //         });
-  //       }
-  //     }
-
-  //     await client.query("COMMIT");
-  //     return availableSlots;
-  //   } catch (error) {
-  //     await client.query("ROLLBACK");
-  //     throw error;
-  //   } finally {
-  //     client.release();
-  //   }
-  // },
-
-  // getDayOfWeek(dayIndex) {
-  //   const days = [
-  //     "Sunday",
-  //     "Monday",
-  //     "Tuesday",
-  //     "Wednesday",
-  //     "Thursday",
-  //     "Friday",
-  //     "Saturday",
-  //   ];
-  //   return days[dayIndex];
-  // },
-
-  // generateTimeSlots(startTime, endTime) {
-  //   const slots = [];
-  //   const [startHour, startMinute] = startTime.split(":").map(Number);
-  //   const [endHour, endMinute] = endTime.split(":").map(Number);
-
-  //   let currentHour = startHour;
-  //   let currentMinute = startMinute;
-
-  //   while (
-  //     currentHour < endHour ||
-  //     (currentHour === endHour && currentMinute < endMinute)
-  //   ) {
-  //     slots.push(
-  //       `${currentHour.toString().padStart(2, "0")}:${currentMinute
-  //         .toString()
-  //         .padStart(2, "0")}`
-  //     );
-
-  //     currentMinute += 30;
-  //     if (currentMinute >= 60) {
-  //       currentHour += 1;
-  //       currentMinute = 0;
-  //     }
-  //   }
-
-  //   return slots;
-  // },
 
   async createDoctor(doctorData) {
     const client = await pool.connect();

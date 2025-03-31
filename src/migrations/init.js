@@ -9,6 +9,7 @@ const createTables = async () => {
         email VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
         role VARCHAR(50) NOT NULL DEFAULT 'patient',
+        profile VARCHAR(255) , 
         fcm_token TEXT
       );
     `);
@@ -35,15 +36,17 @@ const createTables = async () => {
         id SERIAL PRIMARY KEY,
         patient_id INTEGER REFERENCES users(id),
         doctor_id INTEGER REFERENCES doctors(id),
-        appointment_date TIMESTAMP,
+        appointment_date DATE NOT NULL,
+        appointment_time TIME NOT NULL,
         status VARCHAR(50),
-        type VARCHAR(50),
+        type VARCHAR(50) CHECK (type IN ('online','hospital')),
         problem TEXT,
         patient_details JSONB,
         booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        cancellation_reason TEXT,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_by INTEGER REFERENCES users(id),
         cancelled_by INTEGER REFERENCES users(id),
-        cancelled_at TIMESTAMP
+        cancelled_at TIMESTAMP WITH TIME ZONE
       );
     `);
 
