@@ -68,6 +68,42 @@ export const createAppointment = async (appointmentData) => {
   }
 };
 
+// export const getAllAppointments = async (filters = {}) => {
+//   const client = await pool.connect();
+//   try {
+//     let query = `
+//       SELECT a.*, 
+//              u.name as patient_name,
+//              u.email as patient_email,
+//              d.specialty as doctor_specialty,
+//              doc.name as doctor_name
+//       FROM appointments a
+//       JOIN users u ON a.patient_id = u.id
+//       JOIN doctors d ON a.doctor_id = d.id
+//       JOIN users doc ON d.user_id = doc.id
+//       WHERE 1=1
+//     `;
+//     const params = [];
+
+//     if (filters.status) {
+//       query += ` AND a.status = $${params.length + 1}`;
+//       params.push(filters.status);
+//     }
+
+//     if (filters.date) {
+//       query += ` AND a.appointment_date = $${params.length + 1}`;
+//       params.push(filters.date);
+//     }
+
+//     query += ` ORDER BY a.appointment_date DESC, a.appointment_time DESC`;
+
+//     const result = await client.query(query, params);
+//     return result.rows;
+//   } finally {
+//     client.release();
+//   }
+// };
+
 export const getAllAppointments = async (filters = {}) => {
   const client = await pool.connect();
   try {
@@ -98,11 +134,44 @@ export const getAllAppointments = async (filters = {}) => {
     query += ` ORDER BY a.appointment_date DESC, a.appointment_time DESC`;
 
     const result = await client.query(query, params);
-    return result.rows;
+    
+    // Get current date and time
+    const now = new Date();
+    // const currentDate = now.toISOString().split('T')[0];
+    // const currentTime = now.toTimeString().split(' ')[0];
+
+    // Separate appointments into past and upcoming
+    const appointments = result.rows.reduce((acc, appointment) => {
+      // Create appointment date object
+      const appointmentDate = new Date(appointment.appointment_date);
+      const appointmentTime = appointment.appointment_time.split(':');
+      
+      // Set hours and minutes for comparison
+      appointmentDate.setHours(parseInt(appointmentTime[0]));
+      appointmentDate.setMinutes(parseInt(appointmentTime[1]));
+      appointmentDate.setSeconds(0);
+      appointmentDate.setMilliseconds(0);
+
+      // Compare with current date and time
+      if (appointmentDate < now) {
+        acc.past.push(appointment);
+      } else {
+        acc.upcoming.push(appointment);
+      }
+      
+      return acc;
+    }, { past: [], upcoming: [] });
+
+    return {
+      past: appointments.past,
+      upcoming: appointments.upcoming,
+      total: result.rows.length
+    };
   } finally {
     client.release();
   }
 };
+
 
 export const updateAppointmentStatus = async (id, status, updated_by) => {
   const client = await pool.connect();
