@@ -135,24 +135,16 @@ export const getAllAppointments = async (filters = {}) => {
 
     const result = await client.query(query, params);
     
-    // Get current date and time
     const now = new Date();
-    // const currentDate = now.toISOString().split('T')[0];
-    // const currentTime = now.toTimeString().split(' ')[0];
-
-    // Separate appointments into past and upcoming
     const appointments = result.rows.reduce((acc, appointment) => {
-      // Create appointment date object
       const appointmentDate = new Date(appointment.appointment_date);
       const appointmentTime = appointment.appointment_time.split(':');
       
-      // Set hours and minutes for comparison
       appointmentDate.setHours(parseInt(appointmentTime[0]));
       appointmentDate.setMinutes(parseInt(appointmentTime[1]));
       appointmentDate.setSeconds(0);
       appointmentDate.setMilliseconds(0);
 
-      // Compare with current date and time
       if (appointmentDate < now) {
         acc.past.push(appointment);
       } else {
